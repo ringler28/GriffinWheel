@@ -1,127 +1,289 @@
-Sub createTube2D()
+Sub createTube3D()
 
 ''''''''''''''''''''''''''
 '3d Tube Automation
 'Author@BrodyRingler
 '10/16/2014
 
-'All dimension lengths are in centimeters and angles are in radians
+'lengths are in centimeters
+'angles are in radians
 ''''''''''''''''''''''''''
 
-'Import parameters from excel
-Dim bendRadius As Double
-bendRadius = 5  'import bend radius
-   
-'Create new part doc and define initial settings
-Dim invApp As Inventor.Application
-Dim partDoc As Inventor.PartDocument
-Dim partDef As Inventor.PartComponentDefinition
-Dim xyPlane As Inventor.WorkPlane
-Dim yzPlane As Inventor.WorkPlane
-Dim sketchXY As Inventor.PlanarSketch
-Dim sketchYZ As Inventor.PlanarSketch
-Dim sketchPath As Inventor.Sketch3D
-Dim transGeo As Inventor.TransientGeometry
-Dim autobend As Inventor.Sketch3DSettings
-    Set invApp = GetObject(, "Inventor.Application")
-    Set partDoc = invApp.Documents.Add(Inventor.DocumentTypeEnum.kPartDocumentObject)
-    'partDoc.Save   'use this to select file location of new part
-    Set partDef = partDoc.ComponentDefinition
-    Set xyPlane = partDef.WorkPlanes.Item(3)
-    Set yzPlane = partDef.WorkPlanes.Item(1)
-    Set sketchXY = partDef.Sketches.Add(xyPlane, False)
-    Set sketchYZ = partDef.Sketches.Add(yzPlane, False)
-    Set sketchPath = partDef.Sketches3D.Add()
-    Set transGeo = invApp.TransientGeometry
-    Set autobend = partDoc.Sketch3DSettings
-    autobend.AutoBendRadius = bendRadius
+Dim filePath As String
+filePath = cpsTubeBuilder2.filepathFrame2.filepathEntry2.Value
+
+'Open and define excel spreadsheet
+On Error GoTo failsafe_1
+Dim dataApp, objWbs, dataWb, dataSheet
+    Set dataApp = CreateObject("Excel.Application")
+    Set objWbs = dataApp.Workbooks
+    dataApp.Visible = False    'change visibility of excel workbook in background
+    'dataApp.Visible = True      'change visibility of excel workbook in background
+    Set dataWb = objWbs.Open(filePath & "CoordinateDatabase.xlsx") 'Set equal to value entered in GUI userform
     
+'Count active excel spreadsheets
+Dim sheetIndex As Integer
+Dim sheetCount As Integer
+Dim maxSheets As Integer
+maxSheets = dataWb.Sheets.Count
+sheetCount = 0
+    For sheetIndex = 1 To maxSheets
+        Set dataSheet = dataWb.Sheets(sheetIndex)
+        If dataSheet.Range("H1") <> "" Then
+            sheetCount = sheetCount + 1
+        ElseIf dataSheet.Range("H1") = "" Then
+        End If
+    Next
 
-'Create multidimensional point array for path lines
-Dim dimensionArray(20, 2) As Double
-Dim rowIndex As Integer
-Dim max As Integer
-
-rowIndex = 0
-max = 2
-maxLine = max - 1
-maxBends = maxLine - 1
-
-x1 = 0
-y1 = 0
-z1 = 0
-x2 = 100
-y2 = 0
-z2 = 0
-x3 = 100
-y3 = 40
-z3 = 0
-
-    dimensionArray(rowIndex, 0) = x1 'range for x values
-    dimensionArray(rowIndex, 1) = y1 'range for y values
-    dimensionArray(rowIndex, 2) = z1 'range for z values
+'Iterate through each tube model part
+For sheetIndex = 1 To sheetCount
+    Set dataSheet = dataWb.Sheets(sheetIndex)
     
-    rowIndex = rowIndex + 1
+    'Count number of active points
+    Dim rowIndex As Integer
+    Dim maxRow As Integer
+    Dim max As Integer
     
-    dimensionArray(rowIndex, 0) = x2 'range for x values
-    dimensionArray(rowIndex, 1) = y2 'range for y values
-    dimensionArray(rowIndex, 2) = z2 'range for z values
+    rowIndex = 1
+    rowCount = 0
+        Do While dataSheet.Range("A" & rowIndex) <> "" Or dataSheet.Range("B" & rowIndex) <> "" Or dataSheet.Range("C" & rowIndex) <> ""
+            rowIndex = rowIndex + 1
+        Loop
+    maxRow = rowIndex - 1
+    max = maxRow - 2
     
-    rowIndex = rowIndex + 1
-    
-    dimensionArray(rowIndex, 0) = x3 'range for x values
-    dimensionArray(rowIndex, 1) = y3 'range for y values
-    dimensionArray(rowIndex, 2) = z3 'range for z values
-
-    'Create points for path lines
-    Dim pointArray(20) As Inventor.SketchPoint3D
-    Dim pointIndex As Integer
-    Dim points As Inventor.SketchPoints3D
-        pointIndex = 0
-        Set points = sketchPath.SketchPoints3D
-        For pointIndex = 0 To max
-            Set pointArray(pointIndex) = points.Add(transGeo.CreatePoint(dimensionArray(pointIndex, 0), dimensionArray(pointIndex, 1), dimensionArray(pointIndex, 2)))
-        Next
-
-'Create lines for sweep path
-Dim lineArray(19) As Inventor.SketchLine3D
-Dim lineIndex As Integer
-Dim lines As Inventor.SketchLines3D
-    lineIndex = 0
-    pointIndex = 0
-    Set lines = sketchPath.SketchLines3D
-    Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
-        For lineIndex = 1 To maxLine
-            pointIndex = pointIndex + 1
-            Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
-        Next
-
-'Create bends on sweep path
-'Dim bendArray(18) As Inventor.SketchArc3D
-'Dim bendIndex As Integer
-'Dim bends As Inventor.SketchArcs3D
-    'bendIndex = 0
-    'lineIndex = 0
-    'Set bends = sketchPath.SketchArcs3D
-        'For bendIndex = 0 To maxBends
-            'Set bendArray(bendIndex) = bends.AddAsBend(lineArray(lineIndex), lineArray(lineIndex + 1), bendRadius)
-            'Call lineArray(lineIndex + 1).StartSketchPoint.ConnectTo(lineArray(lineIndex).EndSketchPoint)
-            'lineIndex = lineIndex + 1
-        'Next
+    'Import parameters from excel
+    Dim bendRadius As Double
+    Dim outerDiameter As Double
+    Dim wallThickness As Double
+    Dim innerDiameter As Double
+    Dim partName As String
+        Set dataSheet = dataWb.Sheets(sheetIndex)
+        outerDiameter = dataSheet.Range("D2")
+        wallThickness = dataSheet.Range("E2")
+        bendRadius = dataSheet.Range("F2")
+        partName = dataSheet.Range("G2")
+        innerDiameter = outerDiameter - (wallThickness * 2)
+       
+    'Create new part doc and define initial settings
+    Dim invApp As Inventor.Application
+    Dim partDoc As Inventor.PartDocument
+    Dim partDef As Inventor.PartComponentDefinition
+    Dim xyPlane As Inventor.WorkPlane
+    Dim yzPlane As Inventor.WorkPlane
+    Dim sketchXY As Inventor.PlanarSketch
+    Dim sketchYZ As Inventor.PlanarSketch
+    Dim sketchPath As Inventor.Sketch3D
+    Dim transGeo As Inventor.TransientGeometry
+    Dim autobend As Inventor.Sketch3DSettings
+        Set invApp = GetObject(, "Inventor.Application")
+        Set partDoc = invApp.Documents.Add(Inventor.DocumentTypeEnum.kPartDocumentObject)
+            
+            If saveOption = 1 Then
+                partDoc.Save   'requires manual selection of new part save location
+            ElseIf saveOption = 2 Then
+                Call partDoc.SaveAs(filePath & "Tube_Models\" & partName & ".ipt", False)   'automatically saves new part
+            End If
+            
+        Set partDef = partDoc.ComponentDefinition
+        Set xyPlane = partDef.WorkPlanes.Item(3)
+        Set yzPlane = partDef.WorkPlanes.Item(1)
+        Set sketchXY = partDef.Sketches.Add(xyPlane, False)
+        Set sketchYZ = partDef.Sketches.Add(yzPlane, False)
+        Set sketchPath = partDef.Sketches3D.Add()
+        Set transGeo = invApp.TransientGeometry
+        Set autobend = partDoc.Sketch3DSettings
+        autobend.AutoBendRadius = bendRadius
         
-'Create shapes for sweep profile
-Dim profiles As Inventor.SketchCircles
-    Set profiles = sketchYZ.SketchCircles
-    Set profileOuter = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), 3)
-    Set profileInner = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), 2.5)
+    'Create multidimensional point array for path lines
+    Dim dimensionIndex As Integer
+    dimensionIndex = 0
+        For rowIndex = 2 To maxRow
+            Dim dimensionArray(100, 2) As Double
+                dimensionArray(dimensionIndex, 0) = dataSheet.Range("A" & rowIndex)
+                dimensionArray(dimensionIndex, 1) = dataSheet.Range("B" & rowIndex)
+                dimensionArray(dimensionIndex, 2) = dataSheet.Range("C" & rowIndex)
+            dimensionIndex = dimensionIndex + 1
+        Next
+    
+        'Create points for path lines
+        Dim pointArray(100) As Inventor.SketchPoint3D
+        Dim pointIndex As Integer
+        Dim points As Inventor.SketchPoints3D
+            pointIndex = 0
+            Set points = sketchPath.SketchPoints3D
+                For pointIndex = 0 To max
+                    Set pointArray(pointIndex) = points.Add(transGeo.CreatePoint(dimensionArray(pointIndex, 0), dimensionArray(pointIndex, 1), dimensionArray(pointIndex, 2)))
+                Next
+    
+    'Create lines for sweep path
+    Dim lineArray(100) As Inventor.SketchLine3D
+    Dim lineIndex As Integer
+    Dim lines As Inventor.SketchLines3D
+        
+        lineIndex = 0
+        pointIndex = 0
+        maxLine = max - 1
+        maxBends = maxLine - 1
+        
+        Set lines = sketchPath.SketchLines3D
+        Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            For lineIndex = 1 To maxLine
+                pointIndex = pointIndex + 1
+                Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            Next
+    
+    'Create shapes for sweep profile
+    Dim profiles As Inventor.SketchCircles
+        Set profiles = sketchYZ.SketchCircles
+        Set profileOuter = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), outerDiameter)
+        Set profileInner = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), innerDiameter)
+    
+    'Create sweep feature to generate tube part
+        Set sweepPath = partDef.Features.CreatePath(lineArray(0))
+        Set sweepProfile = sketchYZ.profiles.AddForSolid(True)
+        Set sweepTube = partDef.Features.SweepFeatures.AddUsingPath(sweepProfile, sweepPath, _
+        PartFeatureOperationEnum.kNewBodyOperation, SweepProfileOrientationEnum.kNormalToPath)
+        
+    partDoc.Save
+Next
 
-'Create sweep feature to generate tube part
-    Set sweepPath = partDef.Features.CreatePath(lineArray(0))
-    Set sweepProfile = sketchYZ.profiles.AddForSolid(True)
-    Set sweepTube = partDef.Features.SweepFeatures.AddUsingPath(sweepProfile, sweepPath, PartFeatureOperationEnum.kNewBodyOperation, SweepProfileOrientationEnum.kNormalToPath)
 
-MsgBox ("procedure was successful")
+'Program end statements
+dataApp.Visible = True
+dataWb.Close False
+    If objWbs.Count = 0 Then
+        dataApp.Quit
+    Else
+    End If
+cpsTubeBuilder2.Hide
+MsgBox ("Procedure was successful")
+GoTo successJump
 
+failsafe_1:
+    dataApp.Visible = True
+    dataWb.Close False
+        If objWbs.Count = 0 Then
+            dataApp.Quit
+        Else
+        End If
+    MsgBox ("Error Encountered: procedure was unsuccessful")
+    
+successJump:
+   
+End Sub
+
+Global dataAppNew, objWbsNew, dataWbNew, dataSheetNew
+Global i As Integer
+
+Sub create_projectNew()
+
+'Dim dataAppNew, objWbsNew, dataWbNew, dataSheetNew
+'Dim i As Integer
+i = 1
+    Set dataAppNew = CreateObject("Excel.Application")
+    Set objWbsNew = dataAppNew.Workbooks
+    dataAppNew.Visible = False    'change visibility of excel workbook in background
+    'dataAppNew.Visible = True      'change visibility of excel workbook in background
+    Set dataWbNew = objWbsNew.Add
+    dataWbNew.Save
+    
+    dataWbNew.Sheets(i).Range("A1") = "X"
+    dataWbNew.Sheets(i).Range("B1") = "Y"
+    dataWbNew.Sheets(i).Range("C1") = "Z"
+    dataWbNew.Sheets(i).Range("D1") = "OD"
+    dataWbNew.Sheets(i).Range("E1") = "WallThick"
+    dataWbNew.Sheets(i).Range("F1") = "BendRad"
+    dataWbNew.Sheets(i).Range("G1") = "PartName"
+    dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    
+    dataAppNew.Visible = True
+    dataAppNew.CommandBars.ActiveMenuBar.Enabled = False
+    dataAppNew.DisplayFullScreen = True
+    'dataAppNew.Width = 185
+    'dataAppNew.Height = 400
+    'dataAppNew.Top = 85
+    'dataAppNew.Left = 150
+  
+  
+Load cpsTubeBuilder_newEntry
+cpsTubeBuilder_main.Hide
+cpsTubeBuilder_newEntry.Show
 
 
 End Sub
+
+
+
+Sub nextPart()
+
+dataWbNew.Sheets(i).Range("D1") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E1") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F1") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G1") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+
+dataWbNew.Worksheets.Add
+i = i + 1
+
+    dataWbNew.Sheets(i).Activate
+    dataWbNew.Sheets(i).Range("A1") = "X"
+    dataWbNew.Sheets(i).Range("B1") = "Y"
+    dataWbNew.Sheets(i).Range("C1") = "Z"
+    dataWbNew.Sheets(i).Range("D1") = "OD"
+    dataWbNew.Sheets(i).Range("E1") = "WallThick"
+    dataWbNew.Sheets(i).Range("F1") = "BendRad"
+    dataWbNew.Sheets(i).Range("G1") = "PartName"
+    dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    
+cpsTubeBuilder_newEntry.Frame6.TextBox4.Value = "****"
+    
+End Sub
+
+Sub savecloseProject()
+
+dataWbNew.Sheets(i).Range("D1") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E1") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F1") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G1") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+
+dataAppNew.Visible = True
+dataAppNew.CommandBars.ActiveMenuBar.Enabled = True
+dataAppNew.DisplayFullScreen = False
+dataWbNew.Save False
+dataWbNew.Close False
+        If objWbsNew.Count = 0 Then
+            dataAppNew.Quit
+        Else
+        End If
+       
+cpsTubeBuilder_newEntry.Hide
+
+End Sub
+
+Sub cadTransition()
+
+dataWbNew.Sheets(i).Range("D1") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E1") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F1") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G1") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+
+dataAppNew.Visible = True
+dataAppNew.CommandBars.ActiveMenuBar.Enabled = True
+dataAppNew.DisplayFullScreen = False
+dataWbNew.Save False
+dataWbNew.Close False
+        If objWbsNew.Count = 0 Then
+            dataAppNew.Quit
+        Else
+        End If
+        
+cpsTubeBuilder_newEntry.Hide
+cpsTubeBuilder_CAD.Show
+
+End Sub
+
+
+
+
+
+
