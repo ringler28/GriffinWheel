@@ -1,0 +1,2096 @@
+==MODULES==
+
+===TubeBuilderDB===
+Global dataAppNew, objWbsNew, dataWbNew
+Global i As Integer
+Global autoOpen As Boolean
+Global sname As String
+Global fname As String
+Global newName As String
+
+Sub create_projectNew()
+
+On Error GoTo failsafe_1
+
+i = 1
+    Set dataAppNew = CreateObject("Excel.Application")
+    Set objWbsNew = dataAppNew.Workbooks
+    dataAppNew.Visible = False    'change visibility of excel workbook in background
+    'dataAppNew.Visible = True      'change visibility of excel workbook in background
+    Set dataWbNew = objWbsNew.Add
+    
+    'Save new project database
+    fname = dataAppNew.GetSaveAsFileName
+    Dim k As Integer
+    k = 0
+        For j = 1 To Len(fname)
+            If Mid(fname, j, 1) = "." Then
+                newName = Left(fname, j - 1) & ".xlsx"
+                k = 1
+                GoTo jump1
+            Else
+            End If
+        Next
+jump1:
+        If k = 0 Then
+            newName = fname & "xlsx"
+        Else
+        End If
+       
+    dataAppNew.DisplayAlerts = False
+    dataWbNew.SaveAs FileName:=newName
+    dataAppNew.DisplayAlerts = True
+    
+    dataWbNew.Sheets(i).Range("A1") = "X"
+    dataWbNew.Sheets(i).Range("B1") = "Y"
+    dataWbNew.Sheets(i).Range("C1") = "Z"
+    dataWbNew.Sheets(i).Range("D1") = "OD"
+    dataWbNew.Sheets(i).Range("E1") = "WallThick"
+    dataWbNew.Sheets(i).Range("F1") = "BendRad"
+    dataWbNew.Sheets(i).Range("G1") = "PartName"
+    
+    'dataAppNew.Visible = True
+    'dataAppNew.DisplayFullScreen = False
+    'dataAppNew.CommandBars.ActiveMenuBar.Enabled = False
+    'dataAppNew.ExecuteExcel4Macro "SHOW.TOOLBAR(""Ribbon"",False)"
+    'dataAppNew.DisplayFormulaBar = False
+    'dataAppNew.Width = 188
+    'dataAppNew.Height = 400
+    'dataAppNew.Top = 85
+    'dataAppNew.Left = 150
+  
+Load cpsTubeBuilder_newEntry
+cpsTubeBuilder_main.Hide
+cpsTubeBuilder_newEntry.Show
+
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+
+End Sub
+
+Sub nextPart()
+
+On Error GoTo failsafe_1
+
+    Dim h As Integer
+    Dim j As Integer
+    
+    Dim xAbs As Double
+    Dim yAbs As Double
+    Dim zAbs As Double
+    xAbs = 0
+    yAbs = 0
+    zAbs = 0
+        
+        If cpsTubeBuilder_newEntry.OptionButton1 = False Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    xAbs = xAbs + cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    yAbs = yAbs + cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    zAbs = zAbs + cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    dataWbNew.Sheets(i).Range("A" & j) = xAbs
+                    dataWbNew.Sheets(i).Range("B" & j) = yAbs
+                    dataWbNew.Sheets(i).Range("C" & j) = zAbs
+                    j = j + 1
+                Else
+                End If
+            Next
+            
+        ElseIf cpsTubeBuilder_newEntry.OptionButton1 = True Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    j = j + 1
+                Else
+                End If
+            Next
+        End If
+    
+    'j = 2
+    'For h = 1 To 20
+        'dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+        'dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+        'dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+        'j = j + 1
+    'Next
+
+dataWbNew.Sheets(i).Range("D2") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E2") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F2") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G2") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    If cpsTubeBuilder_newEntry.CheckBox1.Value = True Then
+        dataWbNew.Sheets(i).Range("I1") = "CreateDwg"
+    Else
+    End If
+
+sname = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+If sname <> "" Then
+    dataWbNew.Sheets(i).NAME = sname
+Else
+End If
+
+If dataWbNew.Sheets.Count > i Then
+    i = i + 1
+    
+    If dataWbNew.Sheets(i).Range("A1") = "" Then
+        dataWbNew.Sheets(i).Activate
+        dataWbNew.Sheets(i).Range("A1") = "X"
+        dataWbNew.Sheets(i).Range("B1") = "Y"
+        dataWbNew.Sheets(i).Range("C1") = "Z"
+        dataWbNew.Sheets(i).Range("D1") = "OD"
+        dataWbNew.Sheets(i).Range("E1") = "WallThick"
+        dataWbNew.Sheets(i).Range("F1") = "BendRad"
+        dataWbNew.Sheets(i).Range("G1") = "PartName"
+    
+    Else
+        dataWbNew.Sheets(i).Activate
+    End If
+    
+Else
+    dataWbNew.Worksheets.Add After:=dataWbNew.Sheets(dataWbNew.Sheets.Count)
+    i = i + 1
+    
+    If dataWbNew.Sheets(i).Range("A1") = "" Then
+        dataWbNew.Sheets(i).Activate
+        dataWbNew.Sheets(i).Range("A1") = "X"
+        dataWbNew.Sheets(i).Range("B1") = "Y"
+        dataWbNew.Sheets(i).Range("C1") = "Z"
+        dataWbNew.Sheets(i).Range("D1") = "OD"
+        dataWbNew.Sheets(i).Range("E1") = "WallThick"
+        dataWbNew.Sheets(i).Range("F1") = "BendRad"
+        dataWbNew.Sheets(i).Range("G1") = "PartName"
+       
+    Else
+        dataWbNew.Sheets(i).Activate
+    End If
+    
+End If
+
+cpsTubeBuilder_newEntry.Frame6.TextBox4.Value = "part name"
+
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+    
+End Sub
+
+Sub previousPart()
+
+On Error GoTo failsafe_1
+
+If i > 1 Then
+    i = i - 1
+    dataWbNew.Sheets(i).Activate
+    
+    cpsTubeBuilder_newEntry.Frame6.TextBox2.Value = dataWbNew.Sheets(i).Range("D2")
+    cpsTubeBuilder_newEntry.Frame6.TextBox3.Value = dataWbNew.Sheets(i).Range("E2")
+    cpsTubeBuilder_newEntry.Frame6.TextBox1.Value = dataWbNew.Sheets(i).Range("F2")
+    cpsTubeBuilder_newEntry.Frame6.TextBox4.Value = dataWbNew.Sheets(i).Range("G2")
+    
+        If dataWbNew.Sheets(i).Range("I1") = "CreateDwg" Then
+            cpsTubeBuilder_newEntry.CheckBox1.Value = True
+        ElseIf dataWbNew.Sheets(i).Range("I1") <> "CreateDwg" Then
+            cpsTubeBuilder_newEntry.CheckBox1.Value = False
+        End If
+Else
+End If
+    
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+
+End Sub
+
+Sub savecloseProject()
+
+On Error GoTo failsafe_1
+
+    Dim h As Integer
+    Dim j As Integer
+    
+    Dim xAbs As Double
+    Dim yAbs As Double
+    Dim zAbs As Double
+    xAbs = 0
+    yAbs = 0
+    zAbs = 0
+        
+        If cpsTubeBuilder_newEntry.OptionButton1 = False Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    xAbs = xAbs + cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    yAbs = yAbs + cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    zAbs = zAbs + cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    dataWbNew.Sheets(i).Range("A" & j) = xAbs
+                    dataWbNew.Sheets(i).Range("B" & j) = yAbs
+                    dataWbNew.Sheets(i).Range("C" & j) = zAbs
+                    j = j + 1
+                Else
+                End If
+            Next
+            
+        ElseIf cpsTubeBuilder_newEntry.OptionButton1 = True Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    j = j + 1
+                Else
+                End If
+            Next
+        End If
+
+        'j = 2
+    'For h = 1 To 20
+        'dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+        'dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+        'dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+        'j = j + 1
+    'Next
+
+dataWbNew.Sheets(i).Range("D2") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E2") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F2") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G2") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    If cpsTubeBuilder_newEntry.CheckBox1.Value = True Then
+        dataWbNew.Sheets(i).Range("I1") = "CreateDwg"
+    Else
+    End If
+sname = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).NAME = sname
+
+dataAppNew.Visible = True
+dataAppNew.DisplayFullScreen = False
+dataAppNew.CommandBars.ActiveMenuBar.Enabled = True
+dataAppNew.ExecuteExcel4Macro "SHOW.TOOLBAR(""Ribbon"",True)"
+dataAppNew.DisplayFormulaBar = True
+
+dataAppNew.DisplayAlerts = False
+dataWbNew.SaveAs FileName:=newName
+dataAppNew.DisplayAlerts = True
+dataWbNew.Close False
+        If objWbsNew.Count = 0 Then
+            dataAppNew.Quit
+        Else
+        End If
+       
+cpsTubeBuilder_newEntry.Hide
+
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+
+End Sub
+
+Sub cadTransition()
+
+On Error GoTo failsafe_1
+
+    Dim h As Integer
+    Dim j As Integer
+    
+    Dim xAbs As Double
+    Dim yAbs As Double
+    Dim zAbs As Double
+    xAbs = 0
+    yAbs = 0
+    zAbs = 0
+        
+        If cpsTubeBuilder_newEntry.OptionButton1 = False Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    xAbs = xAbs + cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    yAbs = yAbs + cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    zAbs = zAbs + cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    dataWbNew.Sheets(i).Range("A" & j) = xAbs
+                    dataWbNew.Sheets(i).Range("B" & j) = yAbs
+                    dataWbNew.Sheets(i).Range("C" & j) = zAbs
+                    j = j + 1
+                Else
+                End If
+            Next
+            
+        ElseIf cpsTubeBuilder_newEntry.OptionButton1 = True Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    j = j + 1
+                Else
+                End If
+            Next
+        End If
+    
+    'j = 2
+    'For h = 1 To 20
+        'dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+        'dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+        'dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+        'j = j + 1
+    'Next
+
+dataWbNew.Sheets(i).Range("D2") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E2") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F2") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G2") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    If cpsTubeBuilder_newEntry.CheckBox1.Value = True Then
+        dataWbNew.Sheets(i).Range("I1") = "CreateDwg"
+    Else
+    End If
+sname = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).NAME = sname
+
+dataAppNew.Visible = True
+dataAppNew.DisplayFullScreen = False
+dataAppNew.CommandBars.ActiveMenuBar.Enabled = True
+dataAppNew.ExecuteExcel4Macro "SHOW.TOOLBAR(""Ribbon"",True)"
+dataAppNew.DisplayFormulaBar = True
+dataAppNew.DisplayAlerts = False
+dataWbNew.SaveAs FileName:=newName
+dataAppNew.DisplayAlerts = True
+dataWbNew.Close False
+        If objWbsNew.Count = 0 Then
+            dataAppNew.Quit
+        Else
+        End If
+        
+cpsTubeBuilder_newEntry.Hide
+
+autoOpen = True
+Call CPS_TubeBuilder.createTube3D(newName, autoOpen)
+
+If cpsTubeBuilder_newEntry.CheckBox1.Value = True Then
+    Call CPS_TubeBuilder.createDwg_CPS11x17
+Else
+End If
+
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+
+End Sub
+
+Sub applyEntry()
+
+On Error GoTo failsafe_1
+
+    Dim h As Integer
+    Dim j As Integer
+    
+    Dim xAbs As Double
+    Dim yAbs As Double
+    Dim zAbs As Double
+    xAbs = 0
+    yAbs = 0
+    zAbs = 0
+        
+        If cpsTubeBuilder_newEntry.OptionButton1 = False Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    xAbs = xAbs + cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    yAbs = yAbs + cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    zAbs = zAbs + cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    dataWbNew.Sheets(i).Range("A" & j) = xAbs
+                    dataWbNew.Sheets(i).Range("B" & j) = yAbs
+                    dataWbNew.Sheets(i).Range("C" & j) = zAbs
+                    j = j + 1
+                Else
+                End If
+            Next
+            
+        ElseIf cpsTubeBuilder_newEntry.OptionButton1 = True Then
+                j = 2
+            For h = 1 To 20
+                If cpsTubeBuilder_newEntry.Controls("x" & i).Value <> "" Then
+                    dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+                    dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+                    dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+                    j = j + 1
+                Else
+                End If
+            Next
+        End If
+    
+    'j = 2
+    'For h = 1 To 20
+        'dataWbNew.Sheets(i).Range("A" & j) = cpsTubeBuilder_newEntry.Controls("x" & h).Value
+        'dataWbNew.Sheets(i).Range("B" & j) = cpsTubeBuilder_newEntry.Controls("y" & h).Value
+        'dataWbNew.Sheets(i).Range("C" & j) = cpsTubeBuilder_newEntry.Controls("z" & h).Value
+        'j = j + 1
+    'Next
+
+dataWbNew.Sheets(i).Range("D2") = cpsTubeBuilder_newEntry.Frame6.TextBox2.Value
+dataWbNew.Sheets(i).Range("E2") = cpsTubeBuilder_newEntry.Frame6.TextBox3.Value
+dataWbNew.Sheets(i).Range("F2") = cpsTubeBuilder_newEntry.Frame6.TextBox1.Value
+dataWbNew.Sheets(i).Range("G2") = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).Range("H1") = "ActiveSheet"
+    If cpsTubeBuilder_newEntry.CheckBox1.Value = True Then
+        dataWbNew.Sheets(i).Range("I1") = "CreateDwg"
+    Else
+    End If
+sname = cpsTubeBuilder_newEntry.Frame6.TextBox4.Value
+dataWbNew.Sheets(i).NAME = sname
+
+GoTo successJump
+
+failsafe_1:
+    Call closeEntryForm
+    
+successJump:
+
+
+End Sub
+
+Sub closeEntryForm()
+
+dataAppNew.Visible = True
+dataAppNew.DisplayFullScreen = False
+dataAppNew.CommandBars.ActiveMenuBar.Enabled = True
+dataAppNew.ExecuteExcel4Macro "SHOW.TOOLBAR(""Ribbon"",True)"
+dataAppNew.DisplayFormulaBar = True
+dataWbNew.Close False
+    If objWbsNew.Count = 0 Then
+        dataAppNew.Quit
+    Else
+    End If
+
+End Sub
+
+
+===TubeBuilder===
+
+Public carryPartDoc As Inventor.PartDocument
+Public carryAsmDoc As Inventor.AssemblyDocument
+Public carryDwgDoc As Inventor.DrawingDocument
+Public carryPartPath As String
+Public carryAsmPath As String
+Public carryDwgPath As String
+
+Public Sub CPS()
+
+'Launch tube builder main menu
+Load cpsTubeBuilder_main
+cpsTubeBuilder_main.Show
+
+End Sub
+
+Sub createTube3D_nonAuto()
+Dim autoOpen As Boolean
+Dim fname As String
+
+autoOpen = False
+fname = ""
+
+Call createTube3D(fname, autoOpen)
+
+End Sub
+
+
+Sub createTube3D(ByVal newName As String, ByVal autoOpen As Boolean)
+
+''''''''''''''''''''''''''
+'3d Tube Automation
+'Author@BrodyRingler
+'10/16/2014
+
+'lengths are in centimeters
+'angles are in radians
+''''''''''''''''''''''''''
+
+'Open and define excel spreadsheet
+On Error GoTo failsafe_1
+Dim filePath As String
+Dim dataApp, objWbs, dataWb, dataSheet
+    Set dataApp = CreateObject("Excel.Application")
+    Set objWbs = dataApp.Workbooks
+    dataApp.Visible = False    'change visibility of excel workbook in background
+    'dataApp.Visible = True      'change visibility of excel workbook in background
+    
+    'determine file location based upon variable passed from previous function
+    If autoOpen = True Then
+        Set dataWb = objWbs.Open(newName)
+        filePath = newName
+    Else
+        filePath = dataApp.GetOpenFileName
+        Set dataWb = objWbs.Open(filePath) 'Set equal to value entered in GUI userform
+    End If
+    
+'Count active excel spreadsheets
+Dim sheetIndex As Integer
+Dim sheetCount As Integer
+Dim maxSheets As Integer
+maxSheets = dataWb.Sheets.Count
+sheetCount = 0
+    For sheetIndex = 1 To maxSheets
+        Set dataSheet = dataWb.Sheets(sheetIndex)
+        If dataSheet.Range("H1") <> "" Then
+            sheetCount = sheetCount + 1
+        ElseIf dataSheet.Range("H1") = "" Then
+        End If
+    Next
+
+'Iterate through each tube model part
+For sheetIndex = 1 To sheetCount
+    Set dataSheet = dataWb.Sheets(sheetIndex)
+    
+    'Count number of active points
+    Dim rowIndex As Integer
+    Dim maxRow As Integer
+    Dim max As Integer
+    
+    rowIndex = 1
+    rowCount = 0
+        Do While dataSheet.Range("A" & rowIndex) <> "" Or dataSheet.Range("B" & rowIndex) <> "" Or dataSheet.Range("C" & rowIndex) <> ""
+            rowIndex = rowIndex + 1
+        Loop
+    maxRow = rowIndex - 1
+    max = maxRow - 2
+    
+    'Import parameters from excel
+    'Convert from mm to cm
+    Dim bendRadius As Double
+    Dim outerDiameter As Double
+    Dim wallThickness As Double
+    Dim innerDiameter As Double
+    Dim partName As String
+        Set dataSheet = dataWb.Sheets(sheetIndex)
+        outerDiameter = dataSheet.Range("D2") / 20
+        wallThickness = dataSheet.Range("E2") / 20
+        bendRadius = dataSheet.Range("F2") / 10
+        partName = dataSheet.Range("G2")
+        innerDiameter = outerDiameter - (wallThickness * 2)
+       
+    'Create new part doc and define initial settings
+    Dim invApp As Inventor.Application
+    Dim partDoc As Inventor.PartDocument
+    Dim partDef As Inventor.PartComponentDefinition
+    Dim partFeat As Inventor.PartFeatures
+    Dim xyPlane As Inventor.WorkPlane
+    Dim yzPlane As Inventor.WorkPlane
+    Dim sketchXY As Inventor.PlanarSketch
+    Dim sketchYZ As Inventor.PlanarSketch
+    Dim sketchPath As Inventor.Sketch3D
+    Dim transGeo As Inventor.TransientGeometry
+    Dim autobend As Inventor.Sketch3DSettings
+        Set invApp = GetObject(, "Inventor.Application")
+        Set partDoc = invApp.Documents.Add(Inventor.DocumentTypeEnum.kPartDocumentObject)
+        
+            Call partDoc.SaveAs(Left(filePath, (Len(filePath) - 5)) & "\" & partName & ".ipt", False)
+            
+        Set partDef = partDoc.ComponentDefinition
+        Set xyPlane = partDef.WorkPlanes.Item(3)
+        Set yzPlane = partDef.WorkPlanes.Item(1)
+        Set sketchXY = partDef.Sketches.Add(xyPlane, False)
+        Set sketchYZ = partDef.Sketches.Add(yzPlane, False)
+        Set sketchPath = partDef.Sketches3D.Add()
+        Set transGeo = invApp.TransientGeometry
+        Set autobend = partDoc.Sketch3DSettings
+        autobend.AutoBendRadius = bendRadius
+        
+    'Create multidimensional point array for path lines
+    'Convert points from mm to cm
+    Dim dimensionIndex As Integer
+    Dim sketchCoord As Inventor.PropertySet
+    Set sketchCoord = partDoc.PropertySets.Add("Sketch Coord")
+    dimensionIndex = 0
+                        
+        For rowIndex = 2 To maxRow
+            Dim dimensionArray(100, 2) As Double
+                dimensionArray(dimensionIndex, 0) = dataSheet.Range("A" & rowIndex) / 10
+                dimensionArray(dimensionIndex, 1) = dataSheet.Range("B" & rowIndex) / 10
+                dimensionArray(dimensionIndex, 2) = dataSheet.Range("C" & rowIndex) / 10
+                
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 0), "X" & dimensionIndex)
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 1), "Y" & dimensionIndex)
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 2), "Z" & dimensionIndex)
+                
+            dimensionIndex = dimensionIndex + 1
+        Next
+    
+        'Create points for path lines
+        Dim pointArray(100) As Inventor.SketchPoint3D
+        Dim pointIndex As Integer
+        Dim points As Inventor.SketchPoints3D
+            pointIndex = 0
+            Set points = sketchPath.SketchPoints3D
+                For pointIndex = 0 To max
+                    Set pointArray(pointIndex) = points.Add(transGeo.CreatePoint(dimensionArray(pointIndex, 0), dimensionArray(pointIndex, 1), dimensionArray(pointIndex, 2)))
+                Next
+    
+    'Create lines for sweep path
+    Dim lineArray(100) As Inventor.SketchLine3D
+    Dim lineIndex As Integer
+    Dim lines As Inventor.SketchLines3D
+        
+        lineIndex = 0
+        pointIndex = 0
+        maxLine = max - 1
+        maxBends = maxLine - 1
+        
+        Set lines = sketchPath.SketchLines3D
+        Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            For lineIndex = 1 To maxLine
+                pointIndex = pointIndex + 1
+                Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            Next
+    
+    'Create shapes for sweep profile
+    Dim profiles As Inventor.SketchCircles
+        Set profiles = sketchYZ.SketchCircles
+        Set profileOuter = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), outerDiameter)
+        Set profileInner = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), innerDiameter)
+    
+    'Create sweep feature to generate tube part
+        Set sweepPath = partDef.Features.CreatePath(lineArray(0))
+        Set sweepProfile = sketchYZ.profiles.AddForSolid(True)
+        Set sweepTube = partDef.Features.SweepFeatures.AddUsingPath(sweepProfile, sweepPath, _
+        PartFeatureOperationEnum.kNewBodyOperation, SweepProfileOrientationEnum.kNormalToPath)
+    
+    'create imates on ends of tube
+        Dim endFace As Inventor.Faces
+        Dim startFace As Inventor.Faces
+        Dim startAxis As Inventor.Faces
+        Dim endAxis As Inventor.Faces
+        Dim iMateEndFaceDef As Inventor.MateiMateDefinition
+        Dim iMateStartFaceDef As Inventor.MateiMateDefinition
+        Dim iMateEndAxisDef As Inventor.MateiMateDefinition
+        Dim iMateStartAxisDef As Inventor.MateiMateDefinition
+        Dim sideFaceCount As Long
+        Set partDef = partDoc.ComponentDefinition
+        Set partFeat = partDef.Features
+          
+    'define part features
+        Set startFace = partFeat.SweepFeatures(1).StartFaces
+        Set endFace = partFeat.SweepFeatures(1).EndFaces
+        Set startAxis = partFeat.SweepFeatures(1).SideFaces
+        Set endAxis = partFeat.SweepFeatures(1).SideFaces
+        sideFaceCount = startAxis.Count
+            
+    'create imates based upon faces
+        Set iMateStartFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(startFace.Item(1), 0, , , "face1")
+        Set iMateEndFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(endFace.Item(1), 0, , , "face2")
+        Set iMateStartAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(startAxis.Item(sideFaceCount), 0, InferredTypeEnum.kInferredLine, , "axis1")
+        Set iMateEndAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(endAxis.Item(1), 0, InferredTypeEnum.kInferredLine, , "axis2")
+    
+    partDoc.Save
+    
+    Set carryPartDoc = partDoc
+    carryPartPath = partDoc.FullFileName
+        
+    'create dwg if dwg box was checked
+    If dataSheet.Range("I1") = "CreateDwg" Then
+        Call createDwg_CPS11x17
+    Else
+    End If
+    
+Next
+
+
+'Program end statements
+dataApp.Visible = True
+dataWb.Close False
+    If objWbs.Count = 0 Then
+        dataApp.Quit
+    Else
+    End If
+cpsTubeBuilder_newEntry.Hide
+'MsgBox ("Procedure was successful")
+GoTo successJump
+
+failsafe_1:
+    dataApp.Visible = True
+    dataWb.Close False
+        If objWbs.Count = 0 Then
+            dataApp.Quit
+        Else
+        End If
+    MsgBox ("Error Encountered: Status of process unknown, full procedure was unsuccessful")
+    
+successJump:
+   
+End Sub
+
+
+Sub createSingleCAD()
+
+Dim invApp As Inventor.Application
+    Set invApp = GetObject(, "Inventor.Application")
+Dim dataAppNew, objWbsNew, dataWbNew, dataSheetNew
+Dim tempName As String
+Dim filePath As String
+Dim i As Integer
+Dim j As Integer
+
+    On Error GoTo failsafe_1
+    Set dataAppNew = CreateObject("Excel.Application")
+    Set objWbsNew = dataAppNew.Workbooks
+    dataAppNew.Visible = False    'change visibility of excel workbook in background
+    'dataAppNew.Visible = True      'change visibility of excel workbook in background
+    Set dataWbNew = objWbsNew.Add
+            
+        'Inventor file dialog prompt
+        Dim saveDialog As Inventor.FileDialog
+        Call invApp.CreateFileDialog(saveDialog)
+        saveDialog.Filter = "Inventor Files (*.iam;*.ipt)|*.iam;*.ipt|All Files (*.*)|*.*"
+        saveDialog.CancelError = True
+        On Error Resume Next
+        Call saveDialog.ShowSave
+            
+    tempName = saveDialog.FileName
+    i = 1
+    j = 2
+    
+    Dim fileChange As Boolean
+    Dim h As Integer
+    fileChange = False
+        For h = 1 To Len(tempName)
+            If Mid(tempName, h, 1) = "." Then
+                filePath = Left(tempName, h - 1)
+                fileChange = True
+                GoTo jump1
+            Else
+            End If
+        Next
+
+        If fileChange = False Then
+            filePath = tempName
+        Else
+        End If
+jump1:
+       
+    'temporarily record point and parameter entries
+    dataWbNew.Sheets(1).Range("A1") = "X"
+    dataWbNew.Sheets(1).Range("B1") = "Y"
+    dataWbNew.Sheets(1).Range("C1") = "Z"
+    dataWbNew.Sheets(1).Range("D1") = "OD"
+    dataWbNew.Sheets(1).Range("E1") = "WallThick"
+    dataWbNew.Sheets(1).Range("F1") = "BendRad"
+    dataWbNew.Sheets(1).Range("G1") = "PartName"
+    dataWbNew.Sheets(1).Range("H1") = "ActiveSheet"
+    
+    Dim xAbs As Double
+    Dim yAbs As Double
+    Dim zAbs As Double
+    xAbs = 0
+    yAbs = 0
+    zAbs = 0
+        
+        If cpsTubeBuilder_singleEntry.OptionButton1 = False Then
+            j = 2
+            For i = 1 To 20
+                If cpsTubeBuilder_singleEntry.Controls("x" & i).Value <> "" Then
+                    xAbs = xAbs + cpsTubeBuilder_singleEntry.Controls("x" & i).Value
+                    yAbs = yAbs + cpsTubeBuilder_singleEntry.Controls("y" & i).Value
+                    zAbs = zAbs + cpsTubeBuilder_singleEntry.Controls("z" & i).Value
+                    dataWbNew.Sheets(1).Range("A" & j) = xAbs
+                    dataWbNew.Sheets(1).Range("B" & j) = yAbs
+                    dataWbNew.Sheets(1).Range("C" & j) = zAbs
+                    j = j + 1
+                Else
+                End If
+            Next
+            
+        ElseIf cpsTubeBuilder_singleEntry.OptionButton1 = True Then
+                j = 2
+            For i = 1 To 20
+                If cpsTubeBuilder_singleEntry.Controls("x" & i).Value <> "" Then
+                    dataWbNew.Sheets(1).Range("A" & j) = cpsTubeBuilder_singleEntry.Controls("x" & i).Value
+                    dataWbNew.Sheets(1).Range("B" & j) = cpsTubeBuilder_singleEntry.Controls("y" & i).Value
+                    dataWbNew.Sheets(1).Range("C" & j) = cpsTubeBuilder_singleEntry.Controls("z" & i).Value
+                    j = j + 1
+                Else
+                End If
+            Next
+        End If
+
+    dataWbNew.Sheets(1).Range("D2") = cpsTubeBuilder_singleEntry.Frame6.TextBox62.Value
+    dataWbNew.Sheets(1).Range("E2") = cpsTubeBuilder_singleEntry.Frame6.TextBox63.Value
+    dataWbNew.Sheets(1).Range("F2") = cpsTubeBuilder_singleEntry.Frame6.TextBox61.Value
+    dataWbNew.Sheets(1).Range("G2") = cpsTubeBuilder_singleEntry.Frame6.TextBox64.Value
+    
+    'Count number of active points
+    Dim rowIndex As Integer
+    Dim maxRow As Integer
+    Dim max As Integer
+    
+    Set dataSheetNew = dataWbNew.Sheets(1)
+    rowIndex = 1
+    rowCount = 0
+        Do While dataSheetNew.Range("A" & rowIndex) <> "" Or dataSheetNew.Range("B" & rowIndex) <> "" Or dataSheetNew.Range("C" & rowIndex) <> ""
+            rowIndex = rowIndex + 1
+        Loop
+    maxRow = rowIndex - 1
+    max = maxRow - 2
+      
+    Dim bendRadius As Double
+    Dim outerDiameter As Double
+    Dim wallThickness As Double
+    Dim innerDiameter As Double
+    Dim partName As String
+        Set dataSheet = dataWbNew.Sheets(1)
+        outerDiameter = dataSheet.Range("D2") / 20
+        wallThickness = dataSheet.Range("E2") / 20
+        bendRadius = dataSheet.Range("F2") / 10
+        partName = dataSheet.Range("G2")
+        innerDiameter = outerDiameter - (wallThickness * 2)
+        
+     'Create new part doc and define initial settings
+    Dim partDoc As Inventor.PartDocument
+    Dim partDef As Inventor.PartComponentDefinition
+    Dim partFeat As Inventor.PartFeatures
+    Dim xyPlane As Inventor.WorkPlane
+    Dim yzPlane As Inventor.WorkPlane
+    Dim sketchXY As Inventor.PlanarSketch
+    Dim sketchYZ As Inventor.PlanarSketch
+    Dim sketchPath As Inventor.Sketch3D
+    Dim transGeo As Inventor.TransientGeometry
+    Dim autobend As Inventor.Sketch3DSettings
+        Set partDoc = invApp.Documents.Add(Inventor.DocumentTypeEnum.kPartDocumentObject, , False)
+    
+            Call partDoc.SaveAs(filePath & ".ipt", False)
+            
+        Set partDef = partDoc.ComponentDefinition
+        Set xyPlane = partDef.WorkPlanes.Item(3)
+        Set yzPlane = partDef.WorkPlanes.Item(1)
+        Set sketchXY = partDef.Sketches.Add(xyPlane, False)
+        Set sketchYZ = partDef.Sketches.Add(yzPlane, False)
+        Set sketchPath = partDef.Sketches3D.Add()
+        Set transGeo = invApp.TransientGeometry
+        Set autobend = partDoc.Sketch3DSettings
+        autobend.AutoBendRadius = bendRadius
+        
+    'Create multidimensional point array for path lines
+    'Convert points from mm to cm
+    Dim dimensionIndex As Integer
+    Dim sketchCoord As Inventor.PropertySet
+    Set sketchCoord = partDoc.PropertySets.Add("Sketch Coord")
+    dimensionIndex = 0
+                        
+        For rowIndex = 2 To maxRow
+            Dim dimensionArray(100, 2) As Double
+                dimensionArray(dimensionIndex, 0) = dataSheet.Range("A" & rowIndex) / 10
+                dimensionArray(dimensionIndex, 1) = dataSheet.Range("B" & rowIndex) / 10
+                dimensionArray(dimensionIndex, 2) = dataSheet.Range("C" & rowIndex) / 10
+                
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 0), "X" & dimensionIndex)
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 1), "Y" & dimensionIndex)
+                Call sketchCoord.Add(dimensionArray(dimensionIndex, 2), "Z" & dimensionIndex)
+                
+            dimensionIndex = dimensionIndex + 1
+        Next
+    
+        'Create points for path lines
+        Dim pointArray(100) As Inventor.SketchPoint3D
+        Dim pointIndex As Integer
+        Dim points As Inventor.SketchPoints3D
+            pointIndex = 0
+            Set points = sketchPath.SketchPoints3D
+                For pointIndex = 0 To max
+                    Set pointArray(pointIndex) = points.Add(transGeo.CreatePoint(dimensionArray(pointIndex, 0), dimensionArray(pointIndex, 1), dimensionArray(pointIndex, 2)))
+                Next
+    
+    'Create lines for sweep path
+    Dim lineArray(100) As Inventor.SketchLine3D
+    Dim lineIndex As Integer
+    Dim lines As Inventor.SketchLines3D
+        
+        lineIndex = 0
+        pointIndex = 0
+        maxLine = max - 1
+        maxBends = maxLine - 1
+        
+        Set lines = sketchPath.SketchLines3D
+        Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            For lineIndex = 1 To maxLine
+                pointIndex = pointIndex + 1
+                Set lineArray(lineIndex) = lines.AddByTwoPoints(pointArray(pointIndex), pointArray(pointIndex + 1))
+            Next
+    
+    'Create shapes for sweep profile
+    Dim profiles As Inventor.SketchCircles
+        Set profiles = sketchYZ.SketchCircles
+        Set profileOuter = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), outerDiameter)
+        Set profileInner = profiles.AddByCenterRadius(transGeo.CreatePoint2d(0, 0), innerDiameter)
+    
+    'Create sweep feature to generate tube part
+        Set sweepPath = partDef.Features.CreatePath(lineArray(0))
+        Set sweepProfile = sketchYZ.profiles.AddForSolid(True)
+        Set sweepTube = partDef.Features.SweepFeatures.AddUsingPath(sweepProfile, sweepPath, _
+        PartFeatureOperationEnum.kNewBodyOperation, SweepProfileOrientationEnum.kNormalToPath)
+    
+    'create imates on ends of tube
+        Dim endFace As Inventor.Faces
+        Dim startFace As Inventor.Faces
+        Dim startAxis As Inventor.Faces
+        Dim endAxis As Inventor.Faces
+        Dim iMateEndFaceDef As Inventor.MateiMateDefinition
+        Dim iMateStartFaceDef As Inventor.MateiMateDefinition
+        Dim iMateEndAxisDef As Inventor.MateiMateDefinition
+        Dim iMateStartAxisDef As Inventor.MateiMateDefinition
+        Dim sideFaceCount As Long
+        Set partDef = partDoc.ComponentDefinition
+        Set partFeat = partDef.Features
+          
+    'define part features
+        Set startFace = partFeat.SweepFeatures(1).StartFaces
+        Set endFace = partFeat.SweepFeatures(1).EndFaces
+        Set startAxis = partFeat.SweepFeatures(1).SideFaces
+        Set endAxis = partFeat.SweepFeatures(1).SideFaces
+        sideFaceCount = startAxis.Count
+            
+    'create imates based upon faces
+        Set iMateStartFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(startFace.Item(1), 0, , , "face1")
+        Set iMateEndFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(endFace.Item(1), 0, , , "face2")
+        Set iMateStartAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(startAxis.Item(sideFaceCount), 0, InferredTypeEnum.kInferredLine, , "axis1")
+        Set iMateEndAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(endAxis.Item(1), 0, InferredTypeEnum.kInferredLine, , "axis2")
+    
+    partDoc.Save
+    
+    Set carryPartDoc = partDoc
+    carryPartPath = partDoc.FullFileName
+    
+'Program end statements
+dataAppNew.Visible = True
+dataWbNew.Close False
+    If objWbsNew.Count = 0 Then
+        dataAppNew.Quit
+    Else
+    End If
+'MsgBox ("Procedure was successful")
+GoTo successJump
+
+failsafe_1:
+    dataAppNew.Visible = True
+    dataWbNew.Close False
+        If objWbsNew.Count = 0 Then
+            dataAppNew.Quit
+        Else
+        End If
+    MsgBox ("Error Encountered: .ipt generation was unsuccessful")
+        
+successJump:
+    
+
+End Sub
+
+
+
+Sub createCustDwg_CPS11x17()
+
+Dim invApp As Inventor.Application
+Dim thisDoc As Inventor.AssemblyDocument
+Dim viewDoc As Inventor.AssemblyDocument
+Dim partDoc As Inventor.PartDocument
+Dim sketchCoord As Inventor.PropertySet
+Dim transGeo As Inventor.TransientGeometry
+Dim propIndex As Integer
+Dim maxProp As Integer
+Dim xPos As Double
+Dim yPos As Double
+Dim zPos As Double
+Dim partFile As String
+Dim partFilePath As String
+
+    Set invApp = GetObject(, "Inventor.Application")
+    Set thisDoc = carryAsmDoc
+
+    partFile = thisDoc.FullFileName
+    For i = 1 To Len(partFile)
+        If Mid(partFile, Len(partFile) - i, 1) = "." Then
+            partFilePath = Left(partFile, Len(partFile) - i)
+            GoTo jump1
+        Else
+        End If
+    Next
+
+jump1:
+        
+    'Create new drawing document
+    Dim dwgDoc As Inventor.DrawingDocument
+    Dim dwgSheet As Inventor.Sheet
+    Dim pointTable As Inventor.CustomTable
+        Set dwgDoc = invApp.Documents.Add(DocumentTypeEnum.kDrawingDocumentObject, _
+                invApp.FileOptions.TemplatesPath & "CPS_11x17.dwg", False)
+        Set dwgSheet = dwgDoc.Sheets.Item(1)
+        Call dwgDoc.SaveAs(partFilePath & "dwg", False)
+    
+    'Insert views into drawing
+    Dim view1 As Inventor.DrawingView
+    Dim view2 As Inventor.DrawingView
+    Dim view3 As Inventor.DrawingView
+    Dim place1 As Inventor.Point2d
+    Dim place2 As Inventor.Point2d
+    Dim place3 As Inventor.Point2d
+    Dim place4 As Inventor.Point2d
+    Dim scale1 As Double
+    Dim scale2 As Double
+    Dim scaleIso As Double
+    Dim viewOrienTop As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienFront As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienIso As Inventor.ViewOrientationTypeEnum
+    Dim style1 As Inventor.DrawingViewStyleEnum
+    Dim styleIso As Inventor.DrawingViewStyleEnum
+    Dim projStyle As Inventor.DrawingViewStyleEnum
+        Set transGeo = invApp.TransientGeometry
+        Set place1 = transGeo.CreatePoint2d(14, 20)
+        Set place2 = transGeo.CreatePoint2d(14, 10)
+        Set place3 = transGeo.CreatePoint2d(13.2, 12.7)
+                
+                'Set scale for auto view placements
+                scale1 = 0.075
+                scale2 = 0.075
+                scaleIso = 0.1
+            
+            viewOrienTop = ViewOrientationTypeEnum.kTopViewOrientation
+            viewOrienFront = ViewOrientationTypeEnum.kFrontViewOrientation
+            viewOrienIso = ViewOrientationTypeEnum.kIsoTopLeftViewOrientation
+            style1 = DrawingViewStyleEnum.kHiddenLineDrawingViewStyle
+            styleIso = DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle
+            projStyle = DrawingViewStyleEnum.kFromBaseDrawingViewStyle
+           
+        Set viewDoc = invApp.Documents.Open(partFile, False)
+        'Set view1 = dwgSheet.DrawingViews.AddBaseView(viewPartDoc, place1, scale1, viewOrienTop, style1)
+        'Set view2 = dwgSheet.DrawingViews.AddProjectedView(view1, place2, style1)
+        Set view3 = dwgSheet.DrawingViews.AddBaseView(viewDoc, place3, scaleIso, viewOrienIso, styleIso)
+        
+        
+    'recall coordinates from properties and convert to mm and relative
+    Dim relativePoint(100, 2) As Double
+    Dim maxRel As Integer
+    Dim relIndex As Integer
+    
+    'if statement whether assembly or part document
+    Dim asmDef As Inventor.AssemblyComponentDefinition
+    Dim tubeComp As Inventor.ComponentOccurrence
+    Dim countparts As Double
+    Set asmDef = thisDoc.ComponentDefinition
+    Set tubeComp = asmDef.Occurrences.Item(1)
+    Set partDoc = tubeComp.Definition.Document
+    
+    'need to change this to look in the tube part/component occurrence of the asm and not the asm itself
+    Set sketchCoord = partDoc.PropertySets.Item("Sketch Coord")
+    maxProp = (sketchCoord.Count / 3) - 1
+    propIndex = 0
+    
+    i = 0
+    relativePoint(i, 0) = 0
+    relativePoint(i, 1) = 0
+    relativePoint(i, 2) = 0
+    i = i + 1
+    
+    For propIndex = 1 To maxProp
+        relativePoint(i, 0) = sketchCoord.Item("X" & propIndex).Value * 10 - sketchCoord.Item("X" & propIndex - 1).Value * 10
+        relativePoint(i, 1) = sketchCoord.Item("Y" & propIndex).Value * 10 - sketchCoord.Item("Y" & propIndex - 1).Value * 10
+        relativePoint(i, 2) = sketchCoord.Item("Z" & propIndex).Value * 10 - sketchCoord.Item("Z" & propIndex - 1).Value * 10
+        i = i + 1
+    Next
+        maxRel = i - 1
+    
+    'create table with relative points
+    Dim colTitles(1 To 9) As String
+    Dim colWidth(1 To 9) As Double
+    Dim cellContents() As String
+    Dim pointLetters(1 To 10) As String
+    Dim maxContents As Integer
+        maxContents = (maxProp + 1) * 9
+    ReDim cellContents(1 To maxContents)
+    Dim maxRows As Long
+        maxRows = (maxProp + 1)
+    
+    pointLetters(1) = "A"
+    pointLetters(2) = "B"
+    pointLetters(3) = "C"
+    pointLetters(4) = "D"
+    pointLetters(5) = "E"
+    pointLetters(6) = "F"
+    pointLetters(7) = "G"
+    pointLetters(8) = "H"
+    pointLetters(9) = "I"
+    pointLetters(10) = "J"
+        
+        For i = 1 To 9
+            colTitles(i) = ""
+            colWidth(i) = 1.76276
+        Next
+
+    i = 1
+    j = 1
+        
+    For relIndex = 0 To maxRel
+        cellContents(i) = pointLetters(j)
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 0) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 1) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 2) & "mm"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = "0"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        j = j + 1
+    Next
+
+    Set dwgSheet = dwgDoc.ActiveSheet
+    Set place4 = transGeo.CreatePoint2d(26.37, 21.47)
+    Set pointTable = dwgSheet.CustomTables.Add("ReferenceTable", place4, 9, maxRows, colTitles, cellContents, colWidth)
+    
+    For i = 1 To 9
+        pointTable.Columns.Item(i).ValueHorizontalJustification = kAlignTextCenter
+    Next
+    
+    dwgDoc.Save
+    carryDwgPath = dwgDoc.FullFileName
+   
+        
+    
+End Sub
+Sub createEngDwg_CPS11x17()
+
+Dim invApp As Inventor.Application
+Dim thisDoc As Inventor.PartDocument
+Dim viewDoc As Inventor.PartDocument
+Dim partDoc As Inventor.PartDocument
+Dim sketchCoord As Inventor.PropertySet
+Dim transGeo As Inventor.TransientGeometry
+Dim propIndex As Integer
+Dim maxProp As Integer
+Dim xPos As Double
+Dim yPos As Double
+Dim zPos As Double
+Dim partFile As String
+Dim partFilePath As String
+
+    Set invApp = GetObject(, "Inventor.Application")
+    Set thisDoc = carryPartDoc
+
+    partFile = thisDoc.FullFileName
+    For i = 1 To Len(partFile)
+        If Mid(partFile, Len(partFile) - i, 1) = "." Then
+            partFilePath = Left(partFile, Len(partFile) - i)
+            GoTo jump1
+        Else
+        End If
+    Next
+    
+jump1:
+        
+    'Create new drawing document
+    Dim dwgDoc As Inventor.DrawingDocument
+    Dim dwgSheet As Inventor.Sheet
+    Dim pointTable As Inventor.CustomTable
+        Set dwgDoc = invApp.Documents.Add(DocumentTypeEnum.kDrawingDocumentObject, _
+                invApp.FileOptions.TemplatesPath & "CPS_Engineering_11x17.dwg", False)
+        Set dwgSheet = dwgDoc.Sheets.Item(1)
+        Call dwgDoc.SaveAs(partFilePath & "dwg", False)
+    
+    'Insert views into drawing
+    Dim view1 As Inventor.DrawingView
+    Dim view2 As Inventor.DrawingView
+    Dim view3 As Inventor.DrawingView
+    Dim place1 As Inventor.Point2d
+    Dim place2 As Inventor.Point2d
+    Dim place3 As Inventor.Point2d
+    Dim place4 As Inventor.Point2d
+    Dim scale1 As Double
+    Dim scale2 As Double
+    Dim scaleIso As Double
+    Dim viewOrienTop As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienFront As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienIso As Inventor.ViewOrientationTypeEnum
+    Dim style1 As Inventor.DrawingViewStyleEnum
+    Dim styleIso As Inventor.DrawingViewStyleEnum
+    Dim projStyle As Inventor.DrawingViewStyleEnum
+        Set transGeo = invApp.TransientGeometry
+        Set place1 = transGeo.CreatePoint2d(14, 20)
+        Set place2 = transGeo.CreatePoint2d(14, 10)
+        Set place3 = transGeo.CreatePoint2d(13.2, 12.7)
+                
+                'Set scale for auto view placements
+                scale1 = 0.075
+                scale2 = 0.075
+                scaleIso = 0.1
+            
+            viewOrienTop = ViewOrientationTypeEnum.kTopViewOrientation
+            viewOrienFront = ViewOrientationTypeEnum.kFrontViewOrientation
+            viewOrienIso = ViewOrientationTypeEnum.kIsoTopLeftViewOrientation
+            style1 = DrawingViewStyleEnum.kHiddenLineDrawingViewStyle
+            styleIso = DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle
+            projStyle = DrawingViewStyleEnum.kFromBaseDrawingViewStyle
+           
+        Set viewDoc = invApp.Documents.Open(partFile, False)
+        'Set view1 = dwgSheet.DrawingViews.AddBaseView(viewPartDoc, place1, scale1, viewOrienTop, style1)
+        'Set view2 = dwgSheet.DrawingViews.AddProjectedView(view1, place2, style1)
+        Set view3 = dwgSheet.DrawingViews.AddBaseView(viewDoc, place3, scaleIso, viewOrienIso, styleIso)
+        
+        
+    'recall coordinates from properties and convert to mm and relative
+    Dim relativePoint(100, 2) As Double
+    Dim maxRel As Integer
+    Dim relIndex As Integer
+    Set partDoc = thisDoc
+ 
+    
+    'need to change this to look in the tube part/component occurrence of the asm and not the asm itself
+    Set sketchCoord = partDoc.PropertySets.Item("Sketch Coord")
+    maxProp = (sketchCoord.Count / 3) - 1
+    propIndex = 0
+    
+    i = 0
+    relativePoint(i, 0) = 0
+    relativePoint(i, 1) = 0
+    relativePoint(i, 2) = 0
+    i = i + 1
+    
+    For propIndex = 1 To maxProp
+        relativePoint(i, 0) = sketchCoord.Item("X" & propIndex).Value * 10 - sketchCoord.Item("X" & propIndex - 1).Value * 10
+        relativePoint(i, 1) = sketchCoord.Item("Y" & propIndex).Value * 10 - sketchCoord.Item("Y" & propIndex - 1).Value * 10
+        relativePoint(i, 2) = sketchCoord.Item("Z" & propIndex).Value * 10 - sketchCoord.Item("Z" & propIndex - 1).Value * 10
+        i = i + 1
+    Next
+        maxRel = i - 1
+    
+    'create table with relative points
+    Dim colTitles(1 To 9) As String
+    Dim colWidth(1 To 9) As Double
+    Dim cellContents() As String
+    Dim pointLetters(1 To 10) As String
+    Dim maxContents As Integer
+        maxContents = (maxProp + 1) * 9
+    ReDim cellContents(1 To maxContents)
+    Dim maxRows As Long
+        maxRows = (maxProp + 1)
+    
+    pointLetters(1) = "A"
+    pointLetters(2) = "B"
+    pointLetters(3) = "C"
+    pointLetters(4) = "D"
+    pointLetters(5) = "E"
+    pointLetters(6) = "F"
+    pointLetters(7) = "G"
+    pointLetters(8) = "H"
+    pointLetters(9) = "I"
+    pointLetters(10) = "J"
+        
+        For i = 1 To 9
+            colTitles(i) = ""
+            colWidth(i) = 1.76276
+        Next
+
+    i = 1
+    j = 1
+        
+    For relIndex = 0 To maxRel
+        cellContents(i) = pointLetters(j)
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 0) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 1) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 2) & "mm"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = "0"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        j = j + 1
+    Next
+
+    Set dwgSheet = dwgDoc.ActiveSheet
+    Set place4 = transGeo.CreatePoint2d(26.37, 21.47)
+    Set pointTable = dwgSheet.CustomTables.Add("ReferenceTable", place4, 9, maxRows, colTitles, cellContents, colWidth)
+    
+    For i = 1 To 9
+        pointTable.Columns.Item(i).ValueHorizontalJustification = kAlignTextCenter
+    Next
+    
+    dwgDoc.Save
+    carryDwgPath = dwgDoc.FullFileName
+   
+        
+    
+End Sub
+Sub createDwg_CPS11x17_Open()
+
+Dim invApp As Inventor.Application
+'Dim thisDoc As Inventor.PartDocument
+Dim thisDoc As Inventor.AssemblyDocument
+Dim partDoc As Inventor.PartDocument
+Dim viewAsmDoc As Inventor.AssemblyDocument
+'Dim viewPartDoc As Inventor.PartDocument
+Dim sketchCoord As Inventor.PropertySet
+Dim transGeo As Inventor.TransientGeometry
+Dim propIndex As Integer
+Dim maxProp As Integer
+Dim xPos As Double
+Dim yPos As Double
+Dim zPos As Double
+Dim partFile As String
+Dim partFilePath As String
+
+Set invApp = GetObject(, "Inventor.Application")
+
+     'Inventor file dialog prompt
+        Dim openDialog As Inventor.FileDialog
+        Call invApp.CreateFileDialog(openDialog)
+        openDialog.Filter = "Inventor Files (*.iam;*.ipt)|*.iam;*.ipt|All Files (*.*)|*.*"
+        openDialog.CancelError = True
+        On Error Resume Next
+        Call openDialog.ShowOpen
+        partFile = openDialog.FileName
+
+    Set thisDoc = invApp.ActiveDocument
+    
+    For i = 1 To Len(partFile)
+        If Mid(partFile, Len(partFile) - i, 1) = "." Then
+            partFilePath = Left(partFile, Len(partFile) - i)
+            GoTo jump1
+        Else
+        End If
+    Next
+jump1:
+        
+    'Create new drawing document
+    Dim dwgDoc As Inventor.DrawingDocument
+    Dim dwgSheet As Inventor.Sheet
+    Dim pointTable As Inventor.CustomTable
+        Set dwgDoc = invApp.Documents.Add(DocumentTypeEnum.kDrawingDocumentObject, _
+                invApp.FileOptions.TemplatesPath & "CPS_11x17.dwg", False)
+        Set dwgSheet = dwgDoc.Sheets.Item(1)
+        Call dwgDoc.SaveAs(partFilePath & "dwg", False)
+    
+    'Insert views into drawing
+    Dim view1 As Inventor.DrawingView
+    Dim view2 As Inventor.DrawingView
+    Dim view3 As Inventor.DrawingView
+    Dim place1 As Inventor.Point2d
+    Dim place2 As Inventor.Point2d
+    Dim place3 As Inventor.Point2d
+    Dim place4 As Inventor.Point2d
+    Dim scale1 As Double
+    Dim scale2 As Double
+    Dim scaleIso As Double
+    Dim viewOrienTop As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienFront As Inventor.ViewOrientationTypeEnum
+    Dim viewOrienIso As Inventor.ViewOrientationTypeEnum
+    Dim style1 As Inventor.DrawingViewStyleEnum
+    Dim styleIso As Inventor.DrawingViewStyleEnum
+    Dim projStyle As Inventor.DrawingViewStyleEnum
+        Set transGeo = invApp.TransientGeometry
+        Set place1 = transGeo.CreatePoint2d(14, 20)
+        Set place2 = transGeo.CreatePoint2d(14, 10)
+        Set place3 = transGeo.CreatePoint2d(13.2, 12.7)
+                
+                'Set scale for auto view placements
+                scale1 = 0.075
+                scale2 = 0.075
+                scaleIso = 0.1
+            
+            viewOrienTop = ViewOrientationTypeEnum.kTopViewOrientation
+            viewOrienFront = ViewOrientationTypeEnum.kFrontViewOrientation
+            viewOrienIso = ViewOrientationTypeEnum.kIsoTopLeftViewOrientation
+            style1 = DrawingViewStyleEnum.kHiddenLineDrawingViewStyle
+            styleIso = DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle
+            projStyle = DrawingViewStyleEnum.kFromBaseDrawingViewStyle
+           
+        Set viewAsmDoc = invApp.Documents.Open(partFile, False)
+        'Set viewPartDoc = invApp.Documents.Open(partFile, False)
+        'Set view1 = dwgSheet.DrawingViews.AddBaseView(viewPartDoc, place1, scale1, viewOrienTop, style1)
+        'Set view2 = dwgSheet.DrawingViews.AddProjectedView(view1, place2, style1)
+        Set view3 = dwgSheet.DrawingViews.AddBaseView(viewAsmDoc, place3, scaleIso, viewOrienIso, styleIso)
+        
+        
+    'recall coordinates from properties and convert to mm and relative
+    Dim relativePoint(100, 2) As Double
+    Dim maxRel As Integer
+    Dim relIndex As Integer
+    Dim asmDef As Inventor.AssemblyComponentDefinition
+    Dim tubeComp As Inventor.ComponentOccurrence
+
+    Dim countparts As Double
+    Set asmDef = thisDoc.ComponentDefinition
+    Set tubeComp = asmDef.Occurrences.Item(1)
+    Set partDoc = tubeComp.Definition.Document
+    
+    'need to change this to look in the tube part/component occurrence of the asm and not the asm itself
+    Set sketchCoord = partDoc.PropertySets.Item("Sketch Coord")
+    maxProp = (sketchCoord.Count / 3) - 1
+    propIndex = 0
+    
+    i = 0
+    relativePoint(i, 0) = 0
+    relativePoint(i, 1) = 0
+    relativePoint(i, 2) = 0
+    i = i + 1
+    
+    For propIndex = 1 To maxProp
+        relativePoint(i, 0) = sketchCoord.Item("X" & propIndex).Value * 10 - sketchCoord.Item("X" & propIndex - 1).Value * 10
+        relativePoint(i, 1) = sketchCoord.Item("Y" & propIndex).Value * 10 - sketchCoord.Item("Y" & propIndex - 1).Value * 10
+        relativePoint(i, 2) = sketchCoord.Item("Z" & propIndex).Value * 10 - sketchCoord.Item("Z" & propIndex - 1).Value * 10
+        i = i + 1
+    Next
+        maxRel = i - 1
+    
+    'create table with relative points
+    Dim colTitles(1 To 9) As String
+    Dim colWidth(1 To 9) As Double
+    Dim cellContents() As String
+    Dim pointLetters(1 To 10) As String
+    Dim maxContents As Integer
+        maxContents = (maxProp + 1) * 9
+    ReDim cellContents(1 To maxContents)
+    Dim maxRows As Long
+        maxRows = (maxProp + 1)
+    
+    pointLetters(1) = "A"
+    pointLetters(2) = "B"
+    pointLetters(3) = "C"
+    pointLetters(4) = "D"
+    pointLetters(5) = "E"
+    pointLetters(6) = "F"
+    pointLetters(7) = "G"
+    pointLetters(8) = "H"
+    pointLetters(9) = "I"
+    pointLetters(10) = "J"
+        
+        For i = 1 To 9
+            colTitles(i) = ""
+            colWidth(i) = 1.76276
+        Next
+
+    i = 1
+    j = 1
+        
+    For relIndex = 0 To maxRel
+        cellContents(i) = pointLetters(j)
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 0) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 1) & "mm"
+        i = i + 1
+        cellContents(i) = relativePoint(relIndex, 2) & "mm"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = "0"
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        cellContents(i) = ""
+        i = i + 1
+        j = j + 1
+    Next
+
+    Set dwgSheet = dwgDoc.ActiveSheet
+    Set place4 = transGeo.CreatePoint2d(26.37, 21.47)
+    Set pointTable = dwgSheet.CustomTables.Add("ReferenceTable", place4, 9, maxRows, colTitles, cellContents, colWidth)
+    
+    For i = 1 To 9
+        pointTable.Columns.Item(i).ValueHorizontalJustification = kAlignTextCenter
+    Next
+    
+    dwgDoc.Save
+    
+End Sub
+
+
+===PipeSpool===
+
+Global invApp As Inventor.Application
+
+Global partDoc As Inventor.PartDocument
+Global asmDoc As Inventor.AssemblyDocument
+Global partDef As Inventor.PartComponentDefinition
+Global asmDef As Inventor.AssemblyComponentDefinition
+Global tubeComp As Inventor.ComponentOccurrence
+Global end1Comp As Inventor.ComponentOccurrence
+Global end2Comp As Inventor.ComponentOccurrence
+Global end1CompEnum As Inventor.ComponentOccurrencesEnumerator
+Global end2CompEnum As Inventor.ComponentOccurrencesEnumerator
+
+Global transGeo As Inventor.TransientGeometry
+Global xAxis As Inventor.UnitVector
+Global yAxis As Inventor.UnitVector
+Global zAxis As Inventor.UnitVector
+Global origin1 As Inventor.Point
+Global mat1 As Inventor.Matrix
+
+Global fname As String
+Global asmName As String
+Global asmPath As String
+Global templatePath As String
+Global end1 As String
+Global end2 As String
+Global tubePath As String
+
+
+
+
+Sub createAssembly(ByVal end1Combo, end2Combo)
+
+    'Create full pipe spool from active tube model
+    Set invApp = GetObject(, "Inventor.Application")
+    Set partDoc = carryPartDoc
+    
+    tubePath = partDoc.FullFileName
+    asmPath = Left(tubePath, Len(tubePath) - 4) & ".iam"
+    fname = partDoc.DisplayName
+    asmName = Left(fname, Len(fname) - 4) & ".iam"
+    templatePath = invApp.FileOptions.TemplatesPath
+        
+    Set asmDoc = invApp.Documents.Add(DocumentTypeEnum.kAssemblyDocumentObject, templatePath & "Standard.iam", False)
+    Set asmDef = asmDoc.ComponentDefinition
+            
+        'Create matrix 1
+        Set transGeo = invApp.TransientGeometry
+        Set mat1 = transGeo.createMatrix
+        'Set origin location in space
+        Set origin1 = transGeo.CreatePoint(0, 0, 0)
+        'set orientation by manipulating axis unit vectors
+        Set xAxis = transGeo.CreateUnitVector(1, 0, 0)
+        Set yAxis = transGeo.CreateUnitVector(0, 1, 0)
+        Set zAxis = transGeo.CreateUnitVector(0, 0, 1)
+            Call createMatrix
+                    
+        'Define ends based upon selection
+        'add elseif statement for each possible selection
+        'selection lists on userform must also be updated
+        Dim endLocation As String
+            endLocation = "C:\CAD_Work\Designs\TFD\TFD-Unrestricted\CPS\CPS_AutomationFiles\"
+            
+        'define end 1 components
+        If end1Combo = "F37 Flat-faced 30x3.0" Then
+            end1 = endLocation & "F37SLF-16-30x3-E1.iam"
+        ElseIf end1Combo = "F37 Seal-faced 30x3.0" Then
+            end1 = endLocation & "F37SLV-16-30x3-E1.iam"
+        Else
+        End If
+        'define end 2 components
+        If end2Combo = "F37 Flat-faced 30x3.0" Then
+            end2 = endLocation & "F37SLF-16-30x3-E2.iam"
+        ElseIf end2Combo = "F37 Seal-faced 30x3.0" Then
+            end2 = endLocation & "F37SLV-16-30x3-E2.iam"
+        Else
+        End If
+          
+        'insert components into assembly and determine if any ends will be bare cut pipe
+        Set tubeComp = asmDef.Occurrences.Add(tubePath, mat1)
+        If end1Combo <> "Cut-end (no fitting)" And end2Combo <> "Cut-end (no fitting)" Then
+            Set end1CompEnum = asmDef.Occurrences.AddUsingiMates(end1, False)
+                Set end1Comp = end1CompEnum.Item(1)
+            Set end2CompEnum = asmDef.Occurrences.AddUsingiMates(end2, False)
+                Set end2Comp = end2CompEnum.Item(1)
+        ElseIf end1Combo <> "Cut-end (no fitting)" And end2Combo = "Cut-end (no fitting)" Then
+            Set end1CompEnum = asmDef.Occurrences.AddUsingiMates(end1, False)
+                Set end1Comp = end1CompEnum.Item(1)
+        ElseIf end1Combo = "Cut-end (no fitting)" And end2Combo <> "Cut-end (no fitting)" Then
+            Set end2CompEnum = asmDef.Occurrences.AddUsingiMates(end2, False)
+                Set end2Comp = end2CompEnum.Item(1)
+        End If
+               
+    Call asmDoc.SaveAs(asmPath, False)
+    
+    Set carryAsmDoc = asmDoc
+    carryAsmPath = asmPath
+    
+    
+End Sub
+
+Sub createMatrix()
+
+    mat1.Cell(1, 1) = xAxis.X
+    mat1.Cell(2, 1) = xAxis.Y
+    mat1.Cell(3, 1) = xAxis.Z
+    mat1.Cell(1, 2) = yAxis.X
+    mat1.Cell(2, 2) = yAxis.Y
+    mat1.Cell(3, 2) = yAxis.Z
+    mat1.Cell(1, 3) = zAxis.X
+    mat1.Cell(2, 3) = zAxis.Y
+    mat1.Cell(3, 3) = zAxis.Z
+    mat1.Cell(1, 4) = origin1.X
+    mat1.Cell(2, 4) = origin1.Y
+    mat1.Cell(3, 4) = origin1.Z
+
+End Sub
+
+
+
+Sub dumpMatrix()
+    
+    Dim i As Integer
+    
+    Set invApp = GetObject(, "Inventor.Application")
+    Set transGeo = invApp.TransientGeometry
+    Set mat1 = transGeo.createMatrix
+    
+    'Set origin location in space
+    Set origin1 = transGeo.CreatePoint(0, 0, 0)
+    'set orientation by manipulating axis unit vectors
+    Set xAxis = transGeo.CreateUnitVector(1, 0, 0)
+    Set yAxis = transGeo.CreateUnitVector(0, 1, 0)
+    Set zAxis = transGeo.CreateUnitVector(0, 0, 1)
+
+        mat1.Cell(1, 1) = xAxis.X
+        mat1.Cell(2, 1) = xAxis.Y
+        mat1.Cell(3, 1) = xAxis.Z
+        mat1.Cell(1, 2) = yAxis.X
+        mat1.Cell(2, 2) = yAxis.Y
+        mat1.Cell(3, 2) = yAxis.Z
+        mat1.Cell(1, 3) = zAxis.X
+        mat1.Cell(2, 3) = zAxis.Y
+        mat1.Cell(3, 3) = zAxis.Z
+        mat1.Cell(1, 4) = origin1.X
+        mat1.Cell(2, 4) = origin1.Y
+        mat1.Cell(3, 4) = origin1.Z
+
+    For i = 1 To 4
+        Debug.Print Format(mat1.Cell(i, 1), "0.000000") & ", " & _
+                    Format(mat1.Cell(i, 2), "0.000000") & ", " & _
+                    Format(mat1.Cell(i, 3), "0.000000") & ", " & _
+                    Format(mat1.Cell(i, 4), "0.000000")
+    Next
+    
+End Sub
+
+
+===workflowAutomation===
+
+Global invApp As Inventor.Application
+
+Global thisDoc As Inventor.PartDocument
+Global thisAsm As Inventor.AssemblyDocument
+
+Global partDoc As Inventor.PartDocument
+Global shrinkPart As Inventor.PartDocument
+Global asmDoc As Inventor.AssemblyDocument
+
+Global partDef As Inventor.PartComponentDefinition
+Global asmDef As Inventor.AssemblyComponentDefinition
+
+Global derivAsmDef As Inventor.DerivedAssemblyDefinition
+Global derivedAsm As Inventor.DerivedAssemblyComponent
+
+Global transGeo As Inventor.TransientGeometry
+Global xAxis As Inventor.UnitVector
+Global yAxis As Inventor.UnitVector
+Global zAxis As Inventor.UnitVector
+Global origin1 As Inventor.Point
+Global mat1 As Inventor.Matrix
+
+Global partFile As String
+Global partFolder As String
+Global templateFname As String
+Global fname As String
+
+Sub WorkflowTools()
+
+    Load workflowAutomation_main
+    workflowAutomation_main.Show
+
+End Sub
+
+Sub Customer_Model()
+
+Dim i As Integer
+
+    Set invApp = GetObject(, "Inventor.Application")
+    Set thisAsm = invApp.ActiveDocument
+    Set asmDef = thisAsm.ComponentDefinition
+    
+    'Set shrinkwrap template
+    partFile = thisAsm.FullFileName
+    For i = 1 To Len(partFile)
+        If Mid(partFile, Len(partFile) - i, 1) = "\" Then
+            fname = Left(partFile, Len(partFile) - i) & "Cust_" & Mid(partFile, Len(partFile) - i + 1, i - 4)
+            GoTo jump1
+        Else
+        End If
+    Next
+jump1:
+    
+    templateFname = "G:\Inventor\Users\Brody Ringler\Inventor_macros\VBProjects\ShrinkwrapTemplate.ipt"
+    
+    Set shrinkPart = ThisApplication.Documents.Add(kPartDocumentObject, templateFname, False)
+    Set partDef = shrinkPart.ComponentDefinition
+    Set derivAsmDef = partDef.ReferenceComponents.DerivedAssemblyComponents.CreateDefinition(thisAsm.FullDocumentName)
+        
+    ' Create the shrinkwrap component
+    Set derivedAsm = partDef.ReferenceComponents.DerivedAssemblyComponents.Add(derivAsmDef)
+    derivedAsm.BreakLinkToFile
+
+    ' Release reference of invisibly opened template
+    shrinkPart.ReleaseReference
+    
+    Call stpExport
+
+End Sub
+
+
+Sub stpExport()
+
+' Get the STEP translator Add-In.
+Dim stpTrans As Inventor.TranslatorAddIn
+Dim transContext As Inventor.TranslationContext
+Dim transOpt As Inventor.NameValueMap
+Dim transData As Inventor.DataMedium
+
+    Set stpTrans = invApp.ApplicationAddIns.ItemById("{90AF7F40-0C01-11D5-8E83-0010B541CD80}")
+    Set transContext = invApp.TransientObjects.CreateTranslationContext
+    Set transOpt = invApp.TransientObjects.CreateNameValueMap
+
+        If stpTrans.HasSaveCopyAsOptions(invApp.ActiveDocument, transContext, transOpt) Then
+            'mutable options
+            transOpt.Value("ApplicationProtocolType") = 3
+            transOpt.Value("Author") = "Brody Ringler "
+            'SetransContextt transOpt.Value("Authorization") = ""
+            'Set transOpt.Value("Description") = ""
+            transOpt.Value("Organization") = "Parker Hannifan: Tube Fittings Division"
+            transContext.Type = IOMechanismEnum.kFileBrowseIOMechanism
+            Set transData = invApp.TransientObjects.CreateDataMedium
+            transData.FileName = fname & ".stp"
+        
+            Call stpTrans.SaveCopyAs(shrinkPart, transContext, transOpt, transData)
+        End If
+        
+    MsgBox ("Customer model successfully created")
+
+End Sub
+
+'MUST BE MODIFIED TO WORK - shortcut to file open and save locations
+Private Sub m_FileUIEvents_OnFileOpenDialog_1( _
+              ByRef FileTypes() As String, _
+              ByVal ParentHWND As Integer, _
+              ByRef FileName As String, _
+              ByVal Context As Inventor.NameValueMap, _
+              ByRef HandlingCode As Inventor.HandlingCodeEnum)
+
+    '   Display the dialog for the user to enter a filename.
+    Dim m_FileOpenForm As System.Windows.Forms.OpenFileDialog
+    Set m_FileOpenForm = NewSystem.Windows.Forms.OpenFileDialog
+            With m_FileOpenForm
+              'Set the initial Directory
+              .InitialDirectory = "C:\Program Files\Autodesk"
+              .Title = "File Open"
+              .Filter = "Part File (*.ipt)|*.ipt" _
+                      & "|Assembly File (*.iam)|*.iam" _
+                      & "|Presentation File (*.ipn)|*.ipn" _
+                      & "|Drawing File (*.idw)|*.idw" _
+                      & "|Design element File (*.ide)|*.ide"
+              .FilterIndex = 1    'select file extension filter
+              .MultiSelect = False
+              .ShowDialog
+            End With
+        If m_FileOpenForm.FileNames.Length = 0 Then
+          HandlingCode = HandlingCodeEnum.kEventCanceled
+        Else
+          FileName = m_FileOpenForm.FileNames(0)
+          HandlingCode = HandlingCodeEnum.kEventHandled
+        End If
+    m_FileOpenForm = Nothing
+End Sub
+
+
+Sub unitConverter()
+    
+    unitconvertForm.Show
+    
+End Sub
+
+Sub unitConverterrun()
+
+Dim entry As Double
+Dim output As Double
+Dim conversion As Double
+
+entry = unitconvertForm.TextBox1.Value
+
+    If unitconvertForm.OptionButton1.Value = True And unitconvertForm.OptionButton2.Value = False Then
+        conversion = 25.4   '1in = 25.4mm
+    ElseIf unitconvertForm.OptionButton2.Value = True And unitconvertForm.OptionButton1.Value = False Then
+        conversion = 0.0393700787 '1mm = 0.0393700787mm
+    Else
+        MsgBox ("wtf??")
+    End If
+
+output = entry * conversion
+unitconvertForm.TextBox3 = output
+
+End Sub
+
+Sub ParkerStandards()
+
+    Load standardsform
+    standardsform.Show
+
+End Sub
+
+Sub navigateURL(ByVal fileloc As String, ByVal intSel As Integer)
+   
+   Dim chrome As String
+   Dim IE As String
+   
+   chrome = "C:\Users\515141\AppData\Local\Google\Chrome\Application\chrome.exe "
+   IE = "C:\Program Files (x86)\Internet Explorer\iexplore.exe "
+   
+    If intSel = 0 Then
+        Shell chrome & fileloc
+    ElseIf intSel = 1 Then
+        Shell IE & fileloc
+    End If
+    
+End Sub
+
+
+Sub debugTest()
+
+Dim countFaces As Inventor.Faces
+Dim actCount As Long
+Dim partFeat As Inventor.PartFeatures
+
+Dim endFace As Inventor.Faces
+Dim startFace As Inventor.Faces
+Dim startAxis As Inventor.Faces
+Dim endAxis As Inventor.Faces
+Dim iMateEndFaceDef As Inventor.MateiMateDefinition
+Dim iMateStartFaceDef As Inventor.MateiMateDefinition
+Dim iMateEndAxisDef As Inventor.MateiMateDefinition
+Dim iMateStartAxisDef As Inventor.MateiMateDefinition
+
+Set invApp = GetObject(, "Inventor.Application")
+Set thisDoc = invApp.ActiveDocument
+Set partDef = thisDoc.ComponentDefinition
+Set partFeat = partDef.Features
+
+'define part features
+Set startFace = partFeat.SweepFeatures(1).StartFaces
+Set endFace = partFeat.SweepFeatures(1).EndFaces
+Set startAxis = partFeat.SweepFeatures(1).SideFaces
+Set endAxis = partFeat.SweepFeatures(1).SideFaces
+
+'create imates based upon faces
+Set iMateStartFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(startFace.Item(1), 0, , , "face1")
+Set iMateEndFaceDef = partDef.iMateDefinitions.AddMateiMateDefinition(endFace.Item(1), 0, , , "face2")
+Set iMateStartAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(startAxis.Item(14), 0, InferredTypeEnum.kInferredLine, , "Axis1")
+Set iMateEndAxisDef = partDef.iMateDefinitions.AddMateiMateDefinition(endAxis.Item(1), 0, InferredTypeEnum.kInferredLine, , "Axis2")
+        
+'Inventor File Dialog prompt
+Dim saveDialog As Inventor.FileDialog
+'Set oFileDlg = invApp.FileDialog
+Call invApp.CreateFileDialog(saveDialog)
+saveDialog.Filter = "Inventor Files (*.iam;*.ipt)|*.iam;*.ipt|All Files (*.*)|*.*"
+'oFileDlg.Filter = "XML Files (*.xml)|*.xml"
+'oFileDlg.Filter = "Excel Files (*.xls;*.xlsx)|*.xls;*.xlsx"
+'oFileDlg.Filter = "Text Files (*.txt;*.csv)|*.txt;*.csv"
+'oFileDlg.Filter = "SAT Files (*.sat)|*.sat"
+'oFileDlg.Filter = "IGES Files (*.igs)|*.igs"
+'oFileDlg.Filter = "Step Files (*.stp)|*.stp"
+'oFileDlg.DialogTitle = "Select a File"
+
+saveDialog.InitialDirectory = CStr(thisDoc.FullFileName)
+
+saveDialog.CancelError = True
+On Error Resume Next
+Call saveDialog.ShowSave
+
+selectedfile = saveDialog.FileName
+
+Call thisDoc.SaveAs(selectedfile, False)
+
+End Sub
+
+
+______________________________________________________________________________________________________________
+______________________________________________________________________________________________________________
+
+
+==FORMS==
+
+===Single Entry===
+
+Private Sub CommandButton2_Click()
+
+cpsTubeBuilder_singleEntry.Hide
+
+Call CPS_TubeBuilder.createSingleCAD
+    
+'define selections to carry over to create assembly sub routine
+    Dim end1Combo As String
+    Dim end2Combo As String
+   
+    end1Combo = cpsTubeBuilder_singleEntry.Frame7.ComboBox9.Value
+    end2Combo = cpsTubeBuilder_singleEntry.Frame8.ComboBox10.Value
+
+
+    If end1Combo = "Cut-end (no fitting)" And end2Combo = "Cut-end (no fitting)" Then
+        GoTo partOnly
+    Else
+        Call createAssembly(end1Combo, end2Combo)
+    End If
+partOnly:
+
+    'create drawing if checkbox is true
+    If cpsTubeBuilder_singleEntry.CheckBox1 = True Then
+        Call CPS_TubeBuilder.createEngDwg_CPS11x17
+    Else
+    End If
+
+    Load cpsTubeBuilder_success
+    cpsTubeBuilder_success.Show
+    
+    
+    'option to view after creating
+    'Dim invApp As Inventor.Application
+    'Set invApp = GetObject(, "Inventor.Application")
+    'open files dependant upon checkbox value
+    'If cpsTubeBuilder_singleEntry.Frame9.CheckBox2 = True Then
+        'Call invApp.Documents.Open(carryPartPath, True)
+    'ElseIf cpsTubeBuilder_singleEntry.Frame9.CheckBox2 = False Then
+    'End If
+    
+    'If cpsTubeBuilder_singleEntry.Frame9.CheckBox3 = True Then
+        'Call invApp.Documents.Open(carryAsmPath, True)
+    'ElseIf cpsTubeBuilder_singleEntry.Frame9.CheckBox3 = False Then
+    'End If
+    
+    'If cpsTubeBuilder_singleEntry.Frame9.CheckBox4 = True Then
+        'Call invApp.Documents.Open(carryDwgPath, True)
+    'ElseIf cpsTubeBuilder_singleEntry.Frame9.CheckBox4 = False Then
+    'End If
+
+
+
+End Sub
+
+
+Private Sub UserForm_Initialize()
+    
+    With cpsTubeBuilder_singleEntry.Frame1
+        'create vertical scrollbar
+        .ScrollBars = fmScrollBarsVertical
+        .ScrollHeight = .InsideHeight * 2
+        .ScrollWidth = .InsideWidth * 9
+    End With
+    
+    With cpsTubeBuilder_singleEntry.Frame7.ComboBox9
+        'add possible end selections
+        .AddItem "Cut-end (no fitting)"
+        .AddItem "F37 Flat-faced 30x3.0"
+        .AddItem "F37 Seal-faced 30x3.0"
+    End With
+    
+    With cpsTubeBuilder_singleEntry.Frame8.ComboBox10
+        'add possible end selections
+        .AddItem "Cut-end (no fitting)"
+        .AddItem "F37 Flat-faced 30x3.0"
+        .AddItem "F37 Seal-faced 30x3.0"
+    End With
+
+End Sub
+
+
+
+===Success===
+
+
+Private Sub CommandButton1_Click()
+
+cpsTubeBuilder_success.Hide
+
+End Sub
+
+Private Sub CommandButton2_Click()
+
+cpsTubeBuilder_success.Hide
+
+    Dim invApp As Inventor.Application
+    Set invApp = GetObject(, "Inventor.Application")
+    'open files dependant upon checkbox value
+    
+    If cpsTubeBuilder_success.Frame1.CheckBox1 = True Then
+        Call invApp.Documents.Open(carryPartPath, True)
+    ElseIf cpsTubeBuilder_success.Frame1.CheckBox1 = False Then
+    End If
+    
+    If cpsTubeBuilder_success.Frame1.CheckBox2 = True Then
+        Call invApp.Documents.Open(carryAsmPath, True)
+    ElseIf cpsTubeBuilder_success.Frame1.CheckBox2 = False Then
+    End If
+    
+    If cpsTubeBuilder_success.Frame1.CheckBox3 = True Then
+        Call invApp.Documents.Open(carryDwgPath, True)
+    ElseIf cpsTubeBuilder_success.Frame1.CheckBox3 = False Then
+    End If
+
+End Sub
+
+Private Sub UserForm_Activate()
+
+cpsTubeBuilder_success.Frame1.CheckBox1.Visible = True
+cpsTubeBuilder_success.Frame1.CheckBox2.Visible = True
+cpsTubeBuilder_success.Frame1.CheckBox3.Visible = True
+cpsTubeBuilder_success.Frame1.CheckBox1.Value = True
+cpsTubeBuilder_success.Frame1.CheckBox2.Value = True
+cpsTubeBuilder_success.Frame1.CheckBox3.Value = True
+
+If carryAsmPath = "" Then
+   cpsTubeBuilder_success.Frame1.CheckBox2.Visible = False
+   cpsTubeBuilder_success.Frame1.CheckBox2.Value = False
+End If
+
+If carryDwgPath = "" Then
+    cpsTubeBuilder_success.Frame1.CheckBox3.Visible = False
+    cpsTubeBuilder_success.Frame1.CheckBox3.Value = False
+End If
+
+   
+
+End Sub
+
+Private Sub UserForm_Click()
+
+End Sub
